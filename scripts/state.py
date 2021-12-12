@@ -73,8 +73,13 @@ class Qpsi():
         self.tensor = np.reshape(self.coefs, [2]*int(np.log2(len(self.coefs))))
         
     def apply_long_Toffoli(self, axis):
-        self.coefs = apply_long_Toffoli(self.coefs.copy(), axis = axis, N = len(axis)-1)
+        self.coefs = apply_long_Toffoli(self.coefs.copy(), wires = axis)
         self.tensor = np.reshape(self.coefs, [2]*int(np.log2(len(self.coefs))))
+
+    # def apply_arbitory_gate(self, func, wires, **kwargs):
+    #     self.coefs = func(self.coefs.copy(), wires, **kwargs)
+
+
       
         
         

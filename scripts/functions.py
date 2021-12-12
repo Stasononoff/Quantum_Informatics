@@ -130,85 +130,145 @@ def gate_md(Um, state, nums):
 
 
 def apply_Toffoli(coefs, axis):
-    coefs = apply_U(U = H(), coefs = coefs, axis = [axis[2]])
-    coefs = apply_U(U = CX(), coefs = coefs, axis = [axis[1],axis[2]])
+    coefs = gate_md(H(), coefs, [axis[2]])
+    coefs = gate_md(CX(), coefs, [axis[1],axis[2]])
     
-    coefs = apply_U(U = T().conj(), coefs = coefs, axis = [axis[2]])
-    coefs = apply_U(U = CX(), coefs = coefs, axis = [axis[0],axis[2]])
+    coefs = gate_md(T().conj(), coefs, [axis[2]])
+    coefs = gate_md(CX(), coefs, [axis[0],axis[2]])
     
-    coefs = apply_U(U = T(), coefs = coefs, axis = [axis[2]])
-    coefs = apply_U(U = CX(), coefs = coefs, axis = [axis[1],axis[2]])
+    coefs = gate_md(T(), coefs, [axis[2]])
+    coefs = gate_md(CX(), coefs, [axis[1],axis[2]])
     
-    coefs = apply_U(U = T().conj(), coefs = coefs, axis = [axis[2]])
-    coefs = apply_U(U = CX(), coefs = coefs, axis = [axis[0],axis[2]])
+    coefs = gate_md(T().conj(), coefs, [axis[2]])
+    coefs = gate_md(CX(), coefs, [axis[0],axis[2]])
     
-    coefs = apply_U(U = T(), coefs = coefs, axis = [axis[1]])
-    coefs = apply_U(U = T(), coefs = coefs, axis = [axis[2]])
+    coefs = gate_md(T(), coefs, [axis[1]])
+    coefs = gate_md(T(), coefs, [axis[2]])
     
-    coefs = apply_U(U = CX(), coefs = coefs, axis = [axis[0],axis[1]])
-    coefs = apply_U(U = H(), coefs = coefs, axis = [axis[2]])
+    coefs = gate_md(CX(), coefs, [axis[0],axis[1]])
+    coefs = gate_md(H(), coefs, [axis[2]])
     
-    coefs = apply_U(U = T(), coefs = coefs, axis = [axis[0]])
-    coefs = apply_U(U = T().conj(), coefs = coefs, axis = [axis[1]])
+    coefs = gate_md(T(), coefs, [axis[0]])
+    coefs = gate_md(T().conj(), coefs, [axis[1]])
     
-    coefs = apply_U(U = CX(), coefs = coefs, axis = [axis[0],axis[1]])
+    coefs = gate_md(CX(), coefs, [axis[0],axis[1]])
     
     return coefs
+
+# def apply_Toffoli(coefs, axis):
+#     coefs = apply_U(U = H(), coefs = coefs, axis = [axis[2]])
+#     coefs = apply_U(U = CX(), coefs = coefs, axis = [axis[1],axis[2]])
+    
+#     coefs = apply_U(U = T().conj(), coefs = coefs, axis = [axis[2]])
+#     coefs = apply_U(U = CX(), coefs = coefs, axis = [axis[0],axis[2]])
+    
+#     coefs = apply_U(U = T(), coefs = coefs, axis = [axis[2]])
+#     coefs = apply_U(U = CX(), coefs = coefs, axis = [axis[1],axis[2]])
+    
+#     coefs = apply_U(U = T().conj(), coefs = coefs, axis = [axis[2]])
+#     coefs = apply_U(U = CX(), coefs = coefs, axis = [axis[0],axis[2]])
+    
+#     coefs = apply_U(U = T(), coefs = coefs, axis = [axis[1]])
+#     coefs = apply_U(U = T(), coefs = coefs, axis = [axis[2]])
+    
+#     coefs = apply_U(U = CX(), coefs = coefs, axis = [axis[0],axis[1]])
+#     coefs = apply_U(U = H(), coefs = coefs, axis = [axis[2]])
+    
+#     coefs = apply_U(U = T(), coefs = coefs, axis = [axis[0]])
+#     coefs = apply_U(U = T().conj(), coefs = coefs, axis = [axis[1]])
+    
+#     coefs = apply_U(U = CX(), coefs = coefs, axis = [axis[0],axis[1]])
+    
+#     return coefs
+
 
     
     
 def expand_state(coefs, n_qubits):
     
+    
     c = coefs.copy()
-    exp_coefs = np.zeros(len(c)*2**n_qubits)
+    # print(len(c), n_qubits)
+    exp_coefs = np.zeros(2**n_qubits)
     exp_coefs[:len(c)] = c
     
     return exp_coefs
+
+def split_system(coefs, na, nb):
+    
+
+    d = int(2**na)
+    k = int(2**nb)
+    
+    coefs = np.reshape(coefs, [1,d,k,1])
+    rho = np.tensordot(coefs, np.conjugate(coefs), [0,3])
+    rho = np.reshape(rho, (d,k,d,k))
+    rho_A = np.trace(rho, axis1=1, axis2=3)
+    rho_B = np.trace(rho, axis1=0, axis2=2)
+
+    s, v_a = LA.eig(rho_A)
+    A_vec = v_a[:, 0]
+
+    s, v_b = LA.eig(rho_B)
+    B_vec = v_b[:, 0]
+
+    return A_vec, B_vec
+    
+
+
+
 
 def reduce_state(coefs, N):
     c = coefs.copy()
     return c[:2**N]   #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-def apply_long_Toffoli(coefs = None, axis = None, N = 2):
+
+def apply_long_Toffoli(coefs, wires):
+
+    n = len(wires)-2
+
+    if len(wires) == 1:
+        coefs_new = gate_md(X(), copy.deepcopy(coefs), wires)
+        return coefs_new
+    if len(wires) == 2:
+        coefs_new = gate_md(CX(), copy.deepcopy(coefs), wires)
+        return coefs_new
+    if len(wires) == 3:
+        coefs_new = apply_Toffoli(copy.deepcopy(coefs), wires)
+        return coefs_new
+        
+    nq = int(np.log2(len(coefs)))
     
-    if N == 1:
-        new_coefs = apply_U(CX(), coefs.copy(), axis)
-    
-    elif N == 2:
-        new_coefs = apply_Toffoli(coefs.copy(), axis)
-        
-    else:
-    
-        anc_num = N-1
-        tq_num = len(axis) - 1
-        vq_num = int(np.log2(len(coefs)))
-        
-        
-        
-        
-        c = expand_state(coefs, anc_num )
-
-
-        c = apply_Toffoli(coefs = c, axis = [axis[0], axis[1], vq_num])
-
-        
-        for i in range(tq_num-2):
-            c = apply_Toffoli(coefs = c, axis = [axis[i + 2], vq_num + i, vq_num + i + 1])
-
-
-        c = apply_U(CX(), coefs = c, axis = [vq_num + anc_num - 1, axis[-1]])     
-                  
-
-        for i in reversed(range(tq_num-2)):
-            c = apply_Toffoli(coefs = c, axis = [axis[i + 2], vq_num + i, vq_num + i + 1])
-
-        c = apply_Toffoli(coefs = c, axis = [axis[0], axis[1], vq_num])
-
-        new_coefs = reduce_state(coefs = c, N = vq_num)
+    coefs_new = expand_state(copy.deepcopy(coefs), nq+n)
 
     
+    cw = np.array(wires).copy() + n
+    ww = np.array(list(range(n)))
+
     
-    return new_coefs
+    coefs_new = apply_Toffoli(coefs_new, axis = [cw[0],cw[1],ww[0]])
+
+    
+    for i in range(1,n):
+        coefs_new = apply_Toffoli(coefs_new, axis = [cw[i+1],ww[i-1],ww[i]])
+        
+        
+    coefs_new = gate_md(CX(), coefs_new, [ww[-1],cw[-1]])
+   
+    
+    for i in reversed(range(1,n)):
+        coefs_new = apply_Toffoli(coefs_new, axis = [cw[i+1],ww[i-1],ww[i]])
+      
+        
+    coefs_new = apply_Toffoli(coefs_new, axis = [cw[0],cw[1],ww[0]])
+
+    coefs = reduce_state(coefs_new, nq)
+    # _, coefs = split_system(coefs_new, n, nq)
+    
+    
+    return coefs
+
+
     
     
 def Fourier_transfer(state, t, inv = False, noisy = False, eps = 1e-6):
