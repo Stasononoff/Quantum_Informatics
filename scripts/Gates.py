@@ -52,8 +52,12 @@ def H(wire = 0, N = 1):
                                         [1, -1]], dtype=complex), wire, N)
 
 def S(wire = 0, N = 1):
-    return expand((1 / np.sqrt(2)) * np.array([[1, 0],
-                                        [0, i]], dtype=complex), wire, N)
+    return expand(np.array([[1, 0],
+                    [0, 1j]], dtype=complex), wire, N)
+
+def HS(wire = 0, N = 1):
+    return expand((1 / np.sqrt(2)) * np.array([[1, 1j],
+                                        [1j, 1]], dtype=complex), wire, N)
 
 # def ZERO_GATE(wire = 0, N = 1):
 #     return expand((np.array([[1, 0],

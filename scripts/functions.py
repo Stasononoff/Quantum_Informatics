@@ -277,7 +277,7 @@ def Fourier_transfer(state, t, inv = False, noisy = False, eps = 1e-6):
         for i in range(0, t - 1, 1):
             state.apply_U(H(), axis = [i])
             if noisy == True:
-                eps = np.random.normal(0, e)
+                eps = np.random.normal(0, eps)
                 state.apply_U(R_matrix(eps*np.pi, np.pi/2, eps), axis = [i])
             for j in range(2, t - i + 1, 1):
                 state.apply_U(CR(j), axis = [i, i + j - 1])
@@ -291,7 +291,7 @@ def Fourier_transfer(state, t, inv = False, noisy = False, eps = 1e-6):
             state.apply_U(SWAP(), axis = [i, t - i - 1])
         state.apply_U(H(), axis = [t - 1])
         if noisy == True:
-                eps = np.random.normal(0, e)
+                eps = np.random.normal(0, eps)
                 state.apply_U(R_matrix(eps*np.pi, np.pi/2, eps), axis = [i])
         for i in range(t - 2, -1, -1):
             for j in range(t - i, 1, -1):

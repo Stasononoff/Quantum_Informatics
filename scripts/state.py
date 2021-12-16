@@ -46,21 +46,30 @@ class Qpsi():
 #         k = int(2**len(B_axis))
         d = int(2**na)
         k = int(2**nb)
+
+        # rho = np.outer(state, np.conjugate(state))
+        # rho = np.reshape(rho, (4,2,4,2))
+        # rho_A = np.trace(rho, axis1=1, axis2=3)
+        # rho_B = np.trace(rho, axis1=0, axis2=2)
+        # rho_B
         
-        coefs = np.reshape(self.coefs, [1,d,k,1])
-        rho = np.tensordot(coefs, np.conjugate(coefs), [0,3])
+        rho = np.outer(self.coefs, np.conjugate(self.coefs))
+        # coefs = np.reshape(self.coefs, [1,d,k,1])
+        # rho = np.tensordot(coefs, np.conjugate(coefs), [0,3])
         rho = np.reshape(rho, (d,k,d,k))
         self.rho_A = np.trace(rho, axis1=1, axis2=3)
         self.rho_B = np.trace(rho, axis1=0, axis2=2)
         
     def get_A_coefs(self):
         s, v = LA.eig(self.rho_A)
-        A_vec = v[:, 0]
+        # A_vec = v[:, 0]
+        A_vec = np.dot(v, s)
         return A_vec
     
     def get_B_coefs(self):
         s, v = LA.eig(self.rho_B)
-        B_vec = v[:, 0]
+        # B_vec = v[:, 0]
+        B_vec = np.dot(v, s)
         return B_vec
             
     def get_coefs(self):
